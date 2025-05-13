@@ -1,0 +1,84 @@
+gcloud artifacts repositories create --repo name "$AR_REPO" --location "$REGION" --repository format "Docker"                                                                    
+import React, { useState, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+
+export default function Stopwatch() {
+  const [time, setTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [laps, setLaps] = useState([]);
+  const intervalRef = useRef(null);
+
+  const formatTime = (ms) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const milliseconds = ms % 1000;
+    return `${minutes.toString().padStart(2, '0')}:${seconds
+      .toString()
+      .padStart(2, '0')}.${Math.floor(milliseconds / 10)
+      .toString()
+      .padStart(2, '0')}`;
+  };
+
+  const start = () => {
+    if (!isRunning) {
+      intervalRef.current = setInterval(() => {
+        setTime((prev) => prev + 10);
+      }, 10);
+      setIsRunning(true);
+    }
+  };
+
+  const pause = () => {
+    clearInterval(intervalRef.current);
+    setIsRunning(false);
+  };
+
+  const reset = () => {
+    clearInterval(intervalRef.current);
+    setTime(0);
+    setIsRunning(false);
+    setLaps([]);
+  };
+
+  const lap = () => {
+    if (isRunning) {
+      setLaps((prev) => [...prev, time]);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center p-6 gap-4">
+      <Card className="w-full max-w-md text-center">
+        <CardContent className="text-4xl font-mono py-6">
+          {formatTime(time)}
+        </CardContent>
+      </Card>
+
+      <div className="flex gap-4">
+        <Button onClick={start} disabled={isRunning}>Start</Button>
+        <Button onClick={pause} disabled={!isRunning}>Pause</Button>
+        <Button onClick={reset}>Reset</Button>
+        <Button onClick={lap} disabled={!isRunning}>Lap</Button>
+      </div>
+
+      <div className="w-full max-w-md mt-4">
+        {laps.length > 0 && (
+          <Card>
+            <CardContent>
+              <h3 className="text-lg font-semibold mb-2">Lap Times</h3>
+              <ul className="space-y-1">
+                {laps.map((lapTime, index) => (
+                  <li key={index} className="font-mono">
+                    Lap {index + 1}: {formatTime(lapTime)}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
